@@ -1,23 +1,35 @@
 import http from "http";
 
-import { getAudio, uploadAudio } from "./controllers/AudioControllers.ts"
+import { getAudio, uploadAudio } from "./controllers/AudioControllers.ts";
 
 // create the server
 const server = http.createServer((req, res) => {
-    const audioFileId: string = req.url?.split('/')[3]!;
+  const url = req.url || "";
+  const method = req.method || "";
 
-    // get audio file
-   if (req.method == "GET" && req.url == `/api/audio/${audioFileId}`) {
-     return getAudio(req, res);
-   }
+  // Parse URL path
+  const pathParts = url.split("/").filter(Boolean);
 
-   // upload audio
-   if (req.method == "POST" && req.url == "/api/audio/upload") {
-     return uploadAudio(req, res);
-   }
+  // Route: GET /api/audio/:id
+  if (
+    method === "GET" &&
+    pathParts[0] === "api" &&
+    pathParts[1] === "audio" &&
+    pathParts[2]
+  ) {
+    return getAudio(req, res, pathParts[2]);
+  }
+
+  // Route: POST /api/audio/upload
+  if (method === "POST" && url === "/api/audio/upload") {
+    return uploadAudio(req, res);
+  }
+
+  // Handle 404
+  res.writeHead(404, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ error: "Not found" }));
 });
 
 server.listen(3000, () => {
-   console.log("Server is running on port 3000");
+  console.log("Server is running on port 3000");
 });
-
