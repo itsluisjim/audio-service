@@ -1,6 +1,6 @@
 import { ServerResponse, IncomingMessage } from "http";
 
-// This is a service file, it shoul dknow nothing about requests and responses, that's the controller responsiblity, a service contains business logic that can be reused
+// This is a service file, it should know nothing about requests and responses, that's the controller responsiblity, a service contains business logic that can be reused
 //  if it's bounded to requests and response it's less reusable, so I'd refactor these methods to receive just the data they need
 
 export const getAudioFromAwsS3Bucket = (req: IncomingMessage, res: ServerResponse, fileId: string) =>  {
