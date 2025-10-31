@@ -17,8 +17,7 @@ const server = http.createServer((req, res) => {
     pathParts[1] === "audio" &&
     pathParts[2]
   ) {
-    const audioFileId = pathParts[2];
-    return getAudio(req, res, audioFileId);
+    return getAudio(req, res, pathParts[2]);
   }
 
   // Route: POST /api/audio/upload
