@@ -3,9 +3,7 @@ import { getAudioFromAwsS3Bucket, uploadAudioToAwsS3Bucket } from "../services/A
 import formidable from "formidable";
 
 
-export const getAudio = (req: IncomingMessage, res: ServerResponse) => {
-
-    const audioFileId: string = req.url?.split('/')[3]!;
+export const getAudio = (req: IncomingMessage, res: ServerResponse, audioFileId: string) => {
 
     return getAudioFromAwsS3Bucket(req, res, audioFileId);
 }
