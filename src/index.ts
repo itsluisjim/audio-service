@@ -8,7 +8,7 @@ const server = http.createServer((req, res) => {
   const method = req.method || "";
 
   // Parse URL path
-  const pathParts = url.split("/").filter(Boolean);
+  const pathParts: string[] = url.split("/").filter(Boolean);
 
   // Route: GET /api/audio/:id
   if (
