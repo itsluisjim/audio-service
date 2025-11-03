@@ -1,25 +1,40 @@
 import { ServerResponse, IncomingMessage } from "http";
-import { getAudioFromAwsS3Bucket, uploadAudioToAwsS3Bucket } from "../services/AudioServices.ts";
+import { AudioService } from "../services/AudioServices.ts";
 import formidable from "formidable";
 
 
-export const getAudio = (req: IncomingMessage, res: ServerResponse, audioFileId: string) => {
+export class AudioServiceController {
+    private audioService: AudioService;
 
-    return getAudioFromAwsS3Bucket(req, res, audioFileId);
-}
+    constructor(){
+        this.audioService = new AudioService();
+    }
 
-export const uploadAudio = (req: IncomingMessage, res: ServerResponse) => {
+    public getAudio(req: IncomingMessage, res: ServerResponse, audioFileId: string) {
 
-    const form = formidable({ multiples: false });
+        const audioData = this.audioService.getAudioFromAwsS3Bucket(audioFileId);
 
-    form.parse(req, (err, fields, files) => {
+        return res.end(
+            JSON.stringify({ audioData })
+        );
+    }
 
-        const audio = files.audio; // Form field name is 'audio'
+    public uploadAudio(req: IncomingMessage, res: ServerResponse){
+        const form = formidable({ multiples: false });
 
-        const filename = audio?.[0]?.originalFilename || "unknown_file";
+        form.parse(req, (err, fields, files) => {
 
-        const audioFileId: string = "A_VERY_UNIQUE_ID";
+            const audio = files.audio; // Form field name is 'audio'
 
-        return uploadAudioToAwsS3Bucket(req, res, audioFileId, filename);
-    });
+            const filename = audio?.[0]?.originalFilename || "unknown_file";
+
+            const audioFileId: string = "A_VERY_UNIQUE_ID";
+
+            const uploadResult = this.audioService.uploadAudioToAwsS3Bucket(audioFileId, filename);
+
+            return res.end(
+                JSON.stringify({ uploadResult })
+            );
+        });
+    }
 }
