@@ -6,9 +6,9 @@ export class AppServer {
     private port: number;
     private audioServiceController: AudioServiceController;
 
-    constructor(port = 3000) {
+    constructor(port = 3000, audioServiceController: AudioServiceController) {
         this.port = port;
-        this.audioServiceController = new AudioServiceController();
+        this.audioServiceController = audioServiceController;
         this.server = http.createServer(this.requestHandler.bind(this));
     }
 

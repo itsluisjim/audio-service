@@ -6,8 +6,8 @@ import formidable from "formidable";
 export class AudioServiceController {
     private audioService: AudioService;
 
-    constructor(){
-        this.audioService = new AudioService();
+    constructor(audioService: AudioService) {
+        this.audioService = audioService;
     }
 
     public getAudio(req: IncomingMessage, res: ServerResponse, audioFileId: string) {
