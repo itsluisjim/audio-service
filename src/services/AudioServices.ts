@@ -1,9 +1,6 @@
 // This is a service file, it should know nothing about requests and responses, that's the controller responsiblity, a service contains business logic that can be reused
 //  if it's bounded to requests and responses it's less reusable, so I'd refactor these methods to receive just the data they need
 export class AudioService {
-
-    constructor(){}
-
     public getAudioFromAwsS3Bucket(fileId: string){
         return {
             fileId,
