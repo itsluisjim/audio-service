@@ -1,5 +1,5 @@
 import { ServerResponse, IncomingMessage } from "http";
-import { AudioService } from "../services/AudioServices.ts";
+import { AudioService } from "../services/AudioServices";
 import formidable from "formidable";
 
 

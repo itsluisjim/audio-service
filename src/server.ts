@@ -1,5 +1,5 @@
 import http, { IncomingMessage, ServerResponse } from "http";
-import { AudioServiceController } from "./controllers/AudioControllers.ts";
+import { AudioServiceController } from "./controllers/AudioControllers";
 
 export class AppServer {
     private server: http.Server;
