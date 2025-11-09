@@ -1,57 +1,66 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import dotenv from "dotenv";
+import { S3Client, PutObjectCommand, PutObjectCommandOutput, GetObjectCommand} from "@aws-sdk/client-s3";
 import fs from "fs";
+import path from "path/win32";
+import dotenv from "dotenv";
 
 dotenv.config();
 
 export class AudioService {
+  constructor(private s3Client: S3Client) {}
 
-    private s3Client: S3Client;
+  public async getAudioFromAwsS3Bucket(fileUUID: string) {
 
-    constructor(){
-        this.s3Client = new S3Client([{ region: process.env.AWS_REGION, credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } }]);
+    const uploadParams = {
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: fileUUID
+    };
+
+    const command = new GetObjectCommand(uploadParams);
+    const response = await this.s3Client.send(command);
+
+    if (!response.Body) {
+        throw new Error('No response body from S3');
     }
 
-    public getAudioFromAwsS3Bucket(fileId: string){ 
-        return {
-            fileId,
-            fileData: "UWOVU23KJNB2KB2N3K4BKNKJ2N342"
-        };
-    }
+    // return stream data and metadata
+    return {
+        Body: response.Body,
+        ContentType: response.ContentType,
+        ContentLength: response.ContentLength,
+        ETag: response.ETag,
+        LastModified: response.LastModified
+    };
+  }
 
-    public async uploadAudioToAwsS3Bucket(fileId: string, audio: any){
+  public async uploadAudioToAwsS3Bucket(uuid: string, audio: any) {
+    // Read the file from the temporary path
+    const fileStream = fs.createReadStream(audio.filepath);
 
-        // Read the file from the temporary path
-        const fileStream = fs.createReadStream(audio.filepath);
+    // Append file extension
+    const fileExtension = path.extname(audio.originalFilename);
+    const key: string = `${uuid}${fileExtension}`;
 
-        const bucketName = process.env.AWS_S3_BUCKET;
-        const key = `${fileId}-${audio.originalFilename}`;
+    const bucketName = process.env.AWS_S3_BUCKET;
 
-        const uploadParams = {
-            Bucket: bucketName,
-            Key: key,
-            Body: fileStream,
-            ContentType: audio.mimetype
-        };
+    const uploadParams = {
+      Bucket: bucketName,
+      Key: key,
+      Body: fileStream,
+      ContentType: audio.mimetype,
+    };
 
-        try {
-            // Upload the file to S3 and send the command
-            const command = new PutObjectCommand(uploadParams);
-            const result = await this.s3Client.send(command);
+    // Upload the file to S3 and send the command
+    const command: PutObjectCommand = new PutObjectCommand(uploadParams);
+    const result: PutObjectCommandOutput = await this.s3Client.send(command);
 
-            // You can construct the public URL manually if ACL = "public-read"
-            const fileUrl = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    const fileUrl: string = `https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 
-            // Return relevant information about the uploaded file
-            return {
-                key,
-                bucket: bucketName,
-                location: fileUrl,
-                etag: result.ETag,
-            };
-        } catch (err: any) {
-            console.error("S3 upload error:", err);
-            throw new Error(`Failed to upload file: ${err.message}`);
-        }
-    }
+    // Return relevant information about the uploaded file
+    return {
+      key,
+      bucket: bucketName,
+      location: fileUrl,
+      ...result,
+    };
+  }
 }
