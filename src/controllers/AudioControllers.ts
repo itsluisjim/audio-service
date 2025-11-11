@@ -1,5 +1,5 @@
 import { ServerResponse, IncomingMessage } from "http";
-import { AudioService } from "../services/AudioServices";
+import { AudioRepository } from "../services/AudioRepository";
 import formidable from "formidable";
 import { pipeline, Readable } from "stream";
 import { promisify } from "util";
@@ -8,11 +8,11 @@ const streamPipeline = promisify(pipeline);
 
 
 export class AudioServiceController {
-    constructor(private readonly audioService: AudioService) {}
+    constructor(private readonly audioRepository: AudioRepository) {}
 
     public async getAudio(req: IncomingMessage, res: ServerResponse, audioFileUUID: string) {
         try {
-            const response = await this.audioService.getAudioFromAwsS3Bucket(audioFileUUID);
+            const response = await this.audioRepository.getAudioFromAwsS3Bucket(audioFileUUID);
             
             // Set appropriate headers for streaming
             res.writeHead(200, {
@@ -61,7 +61,7 @@ export class AudioServiceController {
             // Generate unique ID for the audio file using a library like uuid
             const audioFileUUID: string = crypto.randomUUID();
 
-            const uploadResult = await this.audioService.uploadAudioToAwsS3Bucket(audioFileUUID, audio);
+            const uploadResult = await this.audioRepository.uploadAudioToAwsS3Bucket(audioFileUUID, audio);
 
             return res.end(
                 JSON.stringify({ uploadResult })

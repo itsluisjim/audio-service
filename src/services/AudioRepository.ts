@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export class AudioService {
+export class AudioRepository {
   constructor(private s3Client: S3Client) {}
 
   public async getAudioFromAwsS3Bucket(fileUUID: string) {

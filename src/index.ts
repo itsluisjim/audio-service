@@ -1,6 +1,6 @@
 import { AppServer } from "./server";
 import { AudioServiceController } from "./controllers/AudioControllers";
-import { AudioService } from "./services/AudioServices";
+import { AudioRepository } from "./services/AudioRepository";
 import { S3Client } from "@aws-sdk/client-s3";
 
 const s3Client = new S3Client([
@@ -12,8 +12,8 @@ const s3Client = new S3Client([
     },
   },
 ]);
-const audioService = new AudioService(s3Client);
-const audioServiceController = new AudioServiceController(audioService);
+const audioRepository = new AudioRepository(s3Client);
+const audioServiceController = new AudioServiceController(audioRepository);
 
 const app = new AppServer(3000, audioServiceController);
 app.start();
