@@ -1,46 +1,28 @@
-import http, { IncomingMessage, ServerResponse } from "http";
 import { AudioServiceController } from "./controllers/AudioControllers";
+import express from "express";
 
 export class AppServer {
-    private server: http.Server;
+    private server: express.Express;
+    private router: express.Router;
     private port: number;
     private audioServiceController: AudioServiceController;
 
     constructor(port = 3000, audioServiceController: AudioServiceController) {
         this.port = port;
         this.audioServiceController = audioServiceController;
-        this.server = http.createServer(this.requestHandler.bind(this));
-    }
-
-    private requestHandler(req: IncomingMessage, res: ServerResponse) {
-
-        const url = req.url || "";
-        const method = req.method || "";
-
-        // Parse URL path
-        const pathParts: string[] = url.split("/").filter(Boolean);
-
-        // Route: GET /api/audio/:id
-        if (
-            method === "GET" &&
-            pathParts[0] === "api" &&
-            pathParts[1] === "audio" &&
-            pathParts[2]
-        ) {
-            return this.audioServiceController.getAudio(req, res, pathParts[2]);
-        }
-
-        // Route: POST /api/audio/upload
-        if (method === "POST" && url === "/api/audio/upload") {
-            return this.audioServiceController.uploadAudio(req, res);
-        }
-
-        // Handle 404
-        res.writeHead(404, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Not founddd" }));
+        this.server = express();
+        this.router = express.Router();
     }
 
     public start() {
+        this.server.use(express.json());
+        this.server.use(express.urlencoded({ extended: false }));
+
+        this.server.use("/api/audio", this.router);
+
+        this.router.get('/:id', (req, res) => this.audioServiceController.getAudio(req, res, req.params.id));
+        this.router.post('/upload', (req, res) => this.audioServiceController.uploadAudio(req, res));
+
         this.server.listen(this.port, () => {
             console.log(`Server is running on port ${this.port}`);
         });
