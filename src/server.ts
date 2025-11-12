@@ -1,13 +1,16 @@
+import "reflect-metadata";
+import { inject, injectable } from "tsyringe";
 import { AudioServiceController } from "./controllers/AudioControllers";
 import express from "express";
 
+@injectable()
 export class AppServer {
     private server: express.Express;
     private router: express.Router;
     private port: number;
     private audioServiceController: AudioServiceController;
 
-    constructor(port = 3000, audioServiceController: AudioServiceController) {
+    constructor(@inject("Port") port = 3000, @inject("AudioServiceController") audioServiceController: AudioServiceController) {
         this.port = port;
         this.audioServiceController = audioServiceController;
         this.server = express();

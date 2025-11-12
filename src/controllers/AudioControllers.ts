@@ -1,16 +1,17 @@
-import { ServerResponse, IncomingMessage } from "http";
+import "reflect-metadata";
 import { AudioRepository } from "../services/AudioRepository";
 import formidable from "formidable";
 import { pipeline, Readable } from "stream";
 import { promisify } from "util";
+import { injectable } from "tsyringe";
 
 const streamPipeline = promisify(pipeline);
 
-
+@injectable()
 export class AudioServiceController {
     constructor(private readonly audioRepository: AudioRepository) {}
 
-    public async getAudio(req: IncomingMessage, res: ServerResponse, audioFileUUID: string) {
+    public async getAudio(req: any, res: any, audioFileUUID: string) {
         try {
             const response = await this.audioRepository.getAudioFromAwsS3Bucket(audioFileUUID);
             
@@ -34,7 +35,7 @@ export class AudioServiceController {
         }
     }
 
-    public uploadAudio(req: IncomingMessage, res: ServerResponse){
+    public uploadAudio(req: any, res: any){
 
         // Create a new formidable form instance
         const form = formidable({ multiples: false });

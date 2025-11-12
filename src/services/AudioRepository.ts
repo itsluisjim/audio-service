@@ -1,10 +1,12 @@
+import "reflect-metadata";
 import { S3Client, PutObjectCommand, PutObjectCommandOutput, GetObjectCommand} from "@aws-sdk/client-s3";
+import { injectable } from "tsyringe";
 import fs from "fs";
 import path from "path/win32";
 import dotenv from "dotenv";
 
 dotenv.config();
-
+@injectable()
 export class AudioRepository {
   constructor(private s3Client: S3Client) {}
 
