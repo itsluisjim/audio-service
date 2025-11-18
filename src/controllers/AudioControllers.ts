@@ -12,27 +12,18 @@ export class AudioServiceController {
     constructor(private readonly audioRepository: AudioRepository) {}
 
     public async getAudio(req: any, res: any, audioFileUUID: string) {
-        try {
-            const response = await this.audioRepository.getAudioFromAwsS3Bucket(audioFileUUID);
+        
+        const response = await this.audioRepository.getAudioFromAwsS3Bucket(audioFileUUID);
             
-            // Set appropriate headers for streaming
-            res.writeHead(200, {
-                'Content-Type': response.ContentType || 'audio/mpeg',
-                'Content-Length': response.ContentLength,
-                'Last-Modified': response.LastModified?.toUTCString() || new Date().toUTCString(),
-            });
+        // Set appropriate headers for streaming
+        res.writeHead(200, {
+            'Content-Type': response.ContentType || 'audio/mpeg',
+            'Content-Length': response.ContentLength,
+            'Last-Modified': response.LastModified?.toUTCString() || new Date().toUTCString(),
+        });
 
-            // Stream the response body
-            await streamPipeline(response.Body as Readable, res);
-            
-        } catch (error) {
-            console.error('Error streaming audio:', error);
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ 
-                error: 'Failed to stream audio file',
-                details: error instanceof Error ? error.message : 'Unknown error'
-            }));
-        }
+        // Stream the response body
+        await streamPipeline(response.Body as Readable, res);
     }
 
     public uploadAudio(req: any, res: any){
