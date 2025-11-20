@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import { inject, injectable } from "tsyringe";
 import { AudioServiceController } from "./controllers/AudioControllers";
-import { ErrorLoggerMiddleware } from "./middleware";
 import express from "express";
 
 @injectable()
@@ -24,9 +23,10 @@ export class AppServer {
 
         this.server.use("/api/audio", this.router);
         
-        this.router.get('/:id', ErrorLoggerMiddleware.catchAsync((req: any, res: any) => this.audioServiceController.getAudio(req, res, req.params.id)));
+        this.router.get('/:id', (req: any, res: any) => this.audioServiceController.getAudio(req, res, req.params.id));
         this.router.post('/upload', (req, res) => this.audioServiceController.uploadAudio(req, res));
         
+        // global error handler
         this.server.use((err: any, req: any, res: any, next: any) => {
             console.log("Global error:", err);
 
