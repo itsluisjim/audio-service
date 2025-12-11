@@ -4,13 +4,13 @@ import formidable from "formidable";
 import { pipeline, Readable } from "stream";
 import { promisify } from "util";
 import { injectable } from "tsyringe";
-import { TranscribeClient, StartTranscriptionJobCommand, StartTranscriptionJobCommandInput } from "@aws-sdk/client-transcribe";
+import { TranscribeService } from "../services/TranscribeS3Client";
 
 const streamPipeline = promisify(pipeline);
 
 @injectable()
 export class AudioServiceController {
-    constructor(private readonly audioRepository: AudioRepository, private transcribeClient: TranscribeClient) {}
+    constructor(private readonly audioRepository: AudioRepository, private transcribeService: TranscribeService) {}
 
     public async getAudio(req: any, res: any, audioFileUUID: string) {
         
@@ -56,20 +56,7 @@ export class AudioServiceController {
 
             const uploadResult = await this.audioRepository.uploadAudioToAwsS3Bucket(audioFileUUID, audio);
 
-            const commandInput: StartTranscriptionJobCommandInput = {
-              TranscriptionJobName: audioFileUUID,
-              LanguageCode: "en-US",
-              Media: {
-                MediaFileUri:
-                  `s3://${process.env.AWS_S3_BUCKET}/${audioFileUUID}.mp3`,
-              },
-              OutputBucketName: process.env.AWS_S3_TRANSCRIPT_BUCKET,
-            };
-
-            const transcribeCommand = new StartTranscriptionJobCommand(commandInput);
-
-            const transcribeResult = await this.transcribeClient.send(transcribeCommand);
-
+            const transcribeResult = await this.transcribeService.startTranscriptionJob(audioFileUUID);
 
             return res.end(
                 JSON.stringify({ uploadResult, transcribeResult })
