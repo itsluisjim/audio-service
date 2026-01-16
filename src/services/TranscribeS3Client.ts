@@ -14,6 +14,11 @@ export class TranscribeService {
                 MediaFileUri: `s3://${process.env.AWS_S3_BUCKET}/${audioFileUUID}.mp3`,
             },
             OutputBucketName: process.env.AWS_S3_TRANSCRIPT_BUCKET,
+            Settings : {
+                ShowSpeakerLabels: true,
+                MaxSpeakerLabels: 30,
+                EnableAutomaticPunctuation: true
+            } as any
         };
 
         const transcribeCommand = new StartTranscriptionJobCommand(commandInput);
