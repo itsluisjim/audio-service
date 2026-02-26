@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { inject, injectable } from "tsyringe";
 import { AudioServiceController } from "./controllers/AudioControllers";
 import express from "express";
+import cors from "cors";
 
 @injectable()
 export class AppServer {
@@ -18,14 +19,16 @@ export class AppServer {
     }
 
     public start() {
+        this.server.use(cors())
         this.server.use(express.json());
         this.server.use(express.urlencoded({ extended: false }));
 
         this.server.use("/api/audio", this.router);
         
+        this.router.get('/list', (req, res) => this.audioServiceController.listAudios(req, res));
         this.router.get('/:id', (req: any, res: any) => this.audioServiceController.getAudio(req, res, req.params.id));
         this.router.post('/upload', (req, res) => this.audioServiceController.uploadAudio(req, res));
-        
+
         // global error handler
         this.server.use((err: any, req: any, res: any, next: any) => {
             console.log("Global error:", err);
