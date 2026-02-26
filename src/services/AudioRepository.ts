@@ -1,5 +1,6 @@
 import "reflect-metadata";
-import { S3Client, PutObjectCommand, PutObjectCommandOutput, GetObjectCommand} from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, PutObjectCommandOutput, GetObjectCommand, ListObjectsV2Command} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { injectable } from "tsyringe";
 import fs from "fs";
 import path from "path/win32";
@@ -9,6 +10,47 @@ dotenv.config();
 @injectable()
 export class AudioRepository {
   constructor(private s3Client: S3Client) {}
+
+  public async listAudiosInAwsS3Bucket() {
+    const audioExtensions = ['.mp3', '.wav', '.m4a', '.ogg', '.flac'];
+    const bucketName = process.env.AWS_S3_BUCKET;
+
+    const command = new ListObjectsV2Command({
+      Bucket: bucketName
+    });
+
+    const response = await this.s3Client.send(command);
+
+    const audioFiles = (response.Contents || []).filter(item => {
+        const key = item.Key?.toLowerCase();
+        return audioExtensions.some(ext => key?.endsWith(ext));
+    });
+
+    const audioPromises = audioFiles.map(async (file) => {
+        const key = file.Key as string;
+
+        const downloadCommand = new GetObjectCommand({
+            Bucket: bucketName,
+            Key: key,
+            ResponseContentDisposition: `attachment; filename="${key.split('/').pop()}"`
+        });
+
+        const signedUrl = await getSignedUrl(
+            this.s3Client,
+            downloadCommand,
+            { expiresIn: 3600 }
+        );
+
+        return {
+            name: key.split('/').pop(), // removes folder prefix if present
+            type: key.split('.').pop(),
+            size: ((file.Size ?? 0) / 1024 / 1024).toFixed(2) + " MB",
+            downloadUrl: signedUrl
+        };
+    });
+
+    return Promise.all(audioPromises);
+  }
 
   public async getAudioFromAwsS3Bucket(fileUUID: string) {
 

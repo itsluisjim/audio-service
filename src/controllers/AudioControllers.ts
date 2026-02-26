@@ -12,6 +12,12 @@ const streamPipeline = promisify(pipeline);
 export class AudioServiceController {
     constructor(private readonly audioRepository: AudioRepository, private transcribeService: TranscribeService) {}
 
+    public async listAudios(req: any, res: any) {
+        const audioList = await this.audioRepository.listAudiosInAwsS3Bucket();
+
+        return res.json({ success: true, data: audioList });
+    }
+
     public async getAudio(req: any, res: any, audioFileUUID: string) {
         
         const response = await this.audioRepository.getAudioFromAwsS3Bucket(audioFileUUID);
