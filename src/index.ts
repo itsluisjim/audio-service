@@ -1,23 +1,14 @@
-import http from "http";
+import "reflect-metadata";
+import { container } from "tsyringe";
+import { AppServer } from "./server";
+import { AudioServiceController } from "./controllers/AudioControllers";
 
-import { getAudio, uploadAudio } from "./controllers/AudioControllers.ts"
+container.register<number>('Port', { useValue: 3000 });
 
-// create the server
-const server = http.createServer((req, res) => {
-    const audioFileId: string = req.url?.split('/')[3]!;
+// Register the controller implementation for the interface token
+container.register<AudioServiceController>('AudioServiceController', { useClass: AudioServiceController });
 
-    // get audio file
-   if (req.method == "GET" && req.url == `/api/audio/${audioFileId}`) {
-     return getAudio(req, res);
-   }
+// Resolve the AppServer (tsyringe now knows how to build it)
+const appServer = container.resolve(AppServer);
 
-   // upload audio
-   if (req.method == "POST" && req.url == "/api/audio/upload") {
-     return uploadAudio(req, res);
-   }
-});
-
-server.listen(3000, () => {
-   console.log("Server is running on port 3000");
-});
-
+appServer.start();
